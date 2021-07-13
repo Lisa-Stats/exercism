@@ -1,16 +1,38 @@
-(ns isbn-verifier)
+(ns isbn-verifier
+  (:require [clojure.string :as str]))
 
-(defn isbn? [isbn] ;; <- arglist goes here
-  ;; your code goes here
-)
+;;last digit is X or #
+;;count is 10
+;;butlast are numbers
 
-(x1 * 10 + x2 * 9 + x3 * 8 + x4 * 7 + x5 * 6 + x6 * 5 + x7 * 4 + x8 * 3 + x9 * 2 + x10 * 1) mod 11 == 0
+(defn prelim-check [isbn]
+  (let [isbn1 (str/escape isbn {\- ""})
+        isbn2 (apply str (map str (butlast isbn)))]
+    (if (str/ends-with? isbn1 "A")
+      false
+      (if (or (= 11 (count isbn1)) (= 10 (count isbn1)))
+        (if (str/includes? isbn2 "A")
+          false
+          (if (str/includes? isbn2 "X")
+            false
+            (if (str/includes? isbn2 "K")
+              false
+              true)))
+        false))))
 
-(defn isbnn [coll]
-  (loop [coll coll
-         acc []]
-    (if (empty? coll)
-      acc
-      (recur (rest coll) (conj acc (* (dec 10) (first coll)))))))
-
-(map #(* (dec 3) %) [1 1 1])
+(defn isbn? [isbn]
+  (if (= true (prelim-check isbn))
+    (if (str/ends-with? isbn "X")
+      (let [isbnx (str/escape isbn {\- ""})
+            isbnxx (apply str (map str (butlast isbnx)))
+            isbnxxx (into [] (map #(Integer/parseInt %) (map str (seq isbnxx))))
+            isbn4x (conj isbnxxx 10)]
+        (= 0 (mod (apply +
+                       (map * isbn4x (reverse (range 1 11))))
+                  11)))
+      (let [isbn1 (str/escape isbn {\- ""})
+            isbn2 (map #(Integer/parseInt %) (map str (seq isbn1)))]
+        (= 0 (mod (apply +
+                         (map * isbn2 (reverse (range 1 11))))
+                  11))))
+    false))

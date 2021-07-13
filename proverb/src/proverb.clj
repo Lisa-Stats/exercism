@@ -1,19 +1,22 @@
-(ns proverb)
+(ns proverb
+  (:require [clojure.string :as str]))
 
-(defn recite [] ;; <- arglist goes here
-    ;; your code goes here
-)
+(defn phrase-create [phrase]
+  (for [x (partition 2 1 phrase)
+        :let [x1 (first x)
+              x2 (second x)]]
+    (str "For want of a " x1 " the " x2 " was lost.")))
 
-(for [x '("nail")
-      :let [y (first x)]]
-  y)
+(defn first-item [phrase]
+  (first phrase))
 
-(doseq [x1 ["nail" "shoe"]
-        x2  ["nail" "shoe"]
-        :let [y (first ["nail" "shoe"])]]
-  (println "for want of a" x1 "the" x2 "was lost")
-  (println "all for want of a" y))
+(defn add-last-phrase [phrase]
+  (conj (phrase-create phrase)
+        (str "And all for the want of a " (first-item phrase) ".")))
 
-(second '("hello" "there"))
-
-(first ["hey" "three"])
+(defn recite [phrase]
+  (if (empty? phrase)
+    ""
+    (str/join "\n" (into []
+                         (concat (rest (add-last-phrase phrase))
+                                 [(first (add-last-phrase phrase))])))))
